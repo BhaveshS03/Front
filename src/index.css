@@ -1,0 +1,219 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PixelOS-inspired Design System for Google Docs Editor */
+
+@layer base {
+  :root {
+    /* PixelOS-inspired cream/yellow palette */
+    --background: 45 100% 96%;
+    --foreground: 30 15% 15%;
+
+    --card: 45 60% 97%;
+    --card-foreground: 30 15% 15%;
+
+    --popover: 45 100% 98%;
+    --popover-foreground: 30 15% 15%;
+
+    /* Warm yellow primary inspired by PixelOS */
+    --primary: 45 100% 65%;
+    --primary-foreground: 30 15% 15%;
+    --primary-glow: 45 100% 80%;
+
+    /* Soft secondary tones */
+    --secondary: 45 40% 92%;
+    --secondary-foreground: 30 15% 15%;
+
+    --muted: 45 30% 94%;
+    --muted-foreground: 30 8% 55%;
+
+    --accent: 50 80% 88%;
+    --accent-foreground: 30 15% 15%;
+
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 45 20% 88%;
+    --input: 45 20% 88%;
+    --ring: 45 100% 65%;
+
+    --radius: 0.75rem;
+
+    /* PixelOS-inspired gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(45 100% 85%), hsl(50 90% 75%));
+    --gradient-subtle: linear-gradient(180deg, hsl(45 100% 97%), hsl(45 60% 94%));
+    --gradient-organic: radial-gradient(ellipse at top left, hsl(45 100% 90%), transparent 50%);
+    
+    /* Document editor specific */
+    --editor-background: 0 0% 100%;
+    --toolbar-background: 45 50% 96%;
+    --sidebar-background: 45 40% 97%;
+    
+    /* Shadows with warm tones */
+    --shadow-soft: 0 4px 20px hsl(45 50% 80% / 0.15);
+    --shadow-medium: 0 8px 30px hsl(45 50% 70% / 0.2);
+    --shadow-glow: 0 0 40px hsl(45 100% 80% / 0.3);
+    
+    /* Smooth transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 45 40% 97%;
+    --sidebar-foreground: 30 15% 15%;
+    --sidebar-primary: 45 100% 65%;
+    --sidebar-primary-foreground: 30 15% 15%;
+    --sidebar-accent: 45 30% 94%;
+    --sidebar-accent-foreground: 30 15% 15%;
+    --sidebar-border: 45 20% 88%;
+    --sidebar-ring: 45 100% 65%;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
+}
+
+@layer components {
+  /* Organic background shapes inspired by PixelOS */
+  .organic-bg {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .organic-bg::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 40%;
+    height: 60%;
+    background: var(--gradient-organic);
+    border-radius: 50% 30% 70% 40%;
+    opacity: 0.6;
+    z-index: -1;
+  }
+  
+  .organic-bg::after {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 35%;
+    height: 50%;
+    background: radial-gradient(ellipse at bottom right, hsl(50 90% 85%), transparent 50%);
+    border-radius: 40% 70% 30% 50%;
+    opacity: 0.4;
+    z-index: -1;
+  }
+
+  /* Editor specific styles */
+  .editor-toolbar {
+    background: hsl(var(--toolbar-background));
+    border-bottom: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .editor-content {
+    background: hsl(var(--editor-background));
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition-smooth);
+  }
+  
+  .editor-content:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Button variants for the editor */
+  .btn-editor {
+    @apply px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200;
+    @apply hover:bg-accent hover:text-accent-foreground;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+  
+  .btn-editor.active {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  /* Collaborative cursors */
+  .collab-cursor {
+    position: absolute;
+    width: 2px;
+    height: 1.2em;
+    animation: blink 1s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  /* Document card hover effects */
+  .doc-card {
+    transition: var(--transition-smooth);
+  }
+  
+  .doc-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+  }
+}
