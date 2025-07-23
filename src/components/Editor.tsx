@@ -1,111 +1,86 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import call from '@/hooks/utils';
-import { sendMessage } from '@/hooks/api';
+import { useState, useRef, useEffect } from "react";
+import  call  from '@/hooks/utils';
+import { sendMessage } from '@/hooks/api'
 
 export function Editor() {
-  const [content, setContent] = useState<Map<number, string>>(new Map());
-  const [cursorInfo, setCursorInfo] = useState({
-    line: 1,
-    column: 1,
-    word: '',
-    lineText: ''
-  });
+  const [content, setContent] = useState(``);
+  const [currentLine, setCurrentLine] = useState(1);
+  const [currentColumn, setCurrentColumn] = useState(1);
+  const [currentWord, setCurrentWord] = useState('');
+  const [currentLineText, setCurrentLineText] = useState(''); // State for the current line's text
   const [isEditing, setIsEditing] = useState(false);
-  const editorRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef(null);
 
-  const getTextFromMap = useCallback((map: Map<number, string>) => {
-    return Array.from(map.values()).join('\n');
-  }, []);
-    const getPlainTextFromEditor = useCallback((): string => {
-      if (!editorRef.current) return '';
-      
-      const textContent = editorRef.current.textContent || '';
-      return textContent;
-    }, []);
-
-  const handleInput = useCallback((e: React.FormEvent<HTMLDivElement>) => {
-    // Use plain text instead of HTML parsing
-    const plainText = getPlainTextFromEditor();
-    const lines = plainText.split('\n');
-    
-    const newMap = new Map<number, string>();
-    lines.forEach((line, idx) => {
-      newMap.set(idx + 1, line);
-    });
-    console.log(newMap);
-    setContent(newMap);
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    setContent(e.currentTarget.innerHTML);
     updateCursorPosition();
-  }, [getPlainTextFromEditor]);
-
+  };
   useEffect(() => {
-    sendMessage(cursorInfo.word, cursorInfo.line, cursorInfo.column);
-  }, [cursorInfo.column]);
+    console.log("working??")
+    sendMessage(currentWord, currentLine, currentColumn);
+  },[currentWord]);
 
-  // Improved: Batch state updates to prevent multiple re-renders
-  const updateCursorPosition = useCallback(() => {
+  const updateCursorPosition = () => {
     const selection = window.getSelection();
     const editableElement = editorRef.current;
 
     if (!selection || selection.rangeCount === 0 || !editableElement) {
-      setCursorInfo(prev => ({
-        ...prev,
-        word: '',
-        lineText: ''
-      }));
+      setCurrentWord('');
+      setCurrentLineText('');
       return;
     }
 
     const range = selection.getRangeAt(0);
     const currentNode = range.startContainer;
+    
+    if (!editableElement.contains(currentNode)) {
+      return;
+    }
+    
+    // --- Calculate Line and Column ---
+    setCurrentColumn(range.startOffset + 1);
 
-    if (!editableElement.contains(currentNode)) return;
-
-    // Calculate all cursor info in one go
-    const newCursorInfo = {
-      line: 1,
-      column: range.startOffset + 1,
-      word: '',
-      lineText: ''
-    };
-
-    // Find line number
+    let lineNum = 1;
     let lineNode: Node | null = null;
     for (let i = 0; i < editableElement.childNodes.length; i++) {
       const node = editableElement.childNodes[i];
       if (node.contains(currentNode)) {
-        newCursorInfo.line = i + 1;
+        lineNum = i + 1;
         lineNode = node;
         break;
       }
     }
+    setCurrentLine(lineNum);
 
-    // Calculate word and line text
-    if (lineNode) {
-      const currText = lineNode.textContent || '';
-      newCursorInfo.lineText = currText;
-
-      // Word extraction logic
+    // --- Get Word/Text of Current Line ---
+    const setWord = (currentText : string) =>{
       if (!selection.isCollapsed) {
-        newCursorInfo.word = selection.toString().trim();
-      } else if (currentNode.nodeType === Node.TEXT_NODE || lineNode?.nodeType === Node.ELEMENT_NODE) {
+        setCurrentWord(selection.toString().trim());
+      } else if (currentNode.nodeType === Node.TEXT_NODE || lineNode.nodeType === Node.ELEMENT_NODE) {
+        const textContent = currentText || '';
         const cursorPosition = range.startOffset;
-        
+
         let startIndex = cursorPosition;
-        while (startIndex > 0 && /\S/.test(currText[startIndex - 1])) {
+        while (startIndex > 0 && /\S/.test(textContent[startIndex - 1])) {
           startIndex--;
         }
         let endIndex = cursorPosition;
-        while (endIndex < currText.length && /\S/.test(currText[endIndex])) {
+        while (endIndex < textContent.length && /\S/.test(textContent[endIndex])) {
           endIndex++;
         }
-        newCursorInfo.word = currText.substring(startIndex, endIndex);
+        setCurrentWord(textContent.substring(startIndex, endIndex));
+      } else {
+        setCurrentWord('');
       }
-    }
-
-    // Single state update instead of multiple setState calls
-    setCursorInfo(newCursorInfo);
-  }, []);
-
+    };
+        if (lineNode) {
+        let currText = (lineNode.textContent ?? (lineNode as HTMLElement).innerText);
+        setCurrentLineText(currText);
+        setWord(currText);
+      } else {
+        setCurrentLineText('');
+      }
+  };
   useEffect(() => {
     const editorElement = editorRef.current;
     if (editorElement) {
@@ -119,7 +94,7 @@ export function Editor() {
         editorElement.removeEventListener('focus', updateCursorPosition);
       };
     }
-  }, [updateCursorPosition]);
+  }, []);
 
   return (
     <div className="flex-1 flex justify-center p-8 organic-bg">
@@ -132,7 +107,7 @@ export function Editor() {
           <div
             contentEditable
             ref={editorRef}
-            className="outline-none prose prose-lg max-w-none whitespace-pre-wrap"
+            className="outline-none prose prose-lg max-w-none"
             style={{
               minHeight: '600px',
               fontFamily: 'Inter, system-ui, sans-serif',
@@ -148,12 +123,7 @@ export function Editor() {
               document.execCommand('insertText', false, text);
               updateCursorPosition();
             }}
-          >
-            {/* Initial render from map */}
-            {Array.from(content.entries()).map(([lineNum, lineText]) => (
-              <div key={lineNum}>{lineText}</div>
-            ))}
-          </div>
+          />
         </div>
         <div className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground">
           <div className="flex justify-between">
@@ -161,25 +131,26 @@ export function Editor() {
             <div className="flex gap-4">
               <span>
                 Words:{' '}
-                {getTextFromMap(content).split(/\s+/).filter(Boolean).length}
+                {content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length}
               </span>
               <span>
-                Characters: {getTextFromMap(content).length}
+                Characters: {content.replace(/<[^>]*>/g, '').length}
               </span>
               <span>
-                Line: {cursorInfo.line}
+                Line: {currentLine}
               </span>
               <span>
-                Col: {cursorInfo.column}
+                Col: {currentColumn}
               </span>
             </div>
           </div>
+          {/* Status bar for current context */}
           <div className="w-full bg-muted/50 p-2 rounded-md flex gap-4 overflow-x-auto">
             <span className="font-semibold whitespace-nowrap">Word:</span>
-            <span className="font-mono text-primary">{cursorInfo.word || '–'}</span>
+            <span className="font-mono text-primary">{currentWord || '–'}</span>
             <span className="border-l border-border"></span>
             <span className="font-semibold whitespace-nowrap">Line Text:</span>
-            <span className="font-mono truncate">{cursorInfo.lineText || '–'}</span>
+            <span className="font-mono truncate">{currentLineText || '–'}</span>
           </div>
         </div>
       </div>
